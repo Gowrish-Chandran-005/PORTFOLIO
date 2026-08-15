@@ -87,13 +87,22 @@
   #scene.leaving-blue{ opacity:0; filter:blur(20px) brightness(1.7) hue-rotate(8deg); transform:scale(1.08); pointer-events:none; }
 
   .stage{
-    position:relative; width:min(94vw, 780px); height:100%;
+    position:relative; width:min(94vw, 1600px); height:100%;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition: transform 1.05s cubic-bezier(.19,1,.22,1);
+  }
+  /* cinematic camera shift — the whole composition subtly leans toward whichever side is
+     being considered, like a camera racking focus, then eases back to neutral on release */
+  body[data-hover="red"] .stage{ transform: scale(1.065) translateX(-20px); }
+  body[data-hover="blue"] .stage{ transform: scale(1.065) translateX(20px); }
+  @media (prefers-reduced-motion: reduce){
+    .stage{ transition:none; }
+    body[data-hover] .stage{ transform:none; }
   }
 
   /* top editorial bar */
   .top-bar{
-    position:absolute; top:5%; width:100%; display:flex; justify-content:space-between; padding:0 2%;
+    position:absolute; top:5%; width:100%; display:flex; justify-content:space-between; padding:0 clamp(24px,6vw,100px);
     opacity:0; transform:translateY(-8px); transition:opacity 1s ease, transform 1s ease;
   }
   .reveal-brand .top-bar{ opacity:1; transform:translateY(0); }
@@ -106,38 +115,83 @@
 
   .eyebrow-row{
     position:absolute; top:13%; width:100%;
-    display:flex; justify-content:space-between; align-items:flex-start; padding:0 1%;
+    display:flex; justify-content:space-between; align-items:flex-start; padding:0 clamp(24px,6vw,100px);
     opacity:0; transform:translateY(-8px);
     transition: opacity 1s ease, transform 1s ease;
   }
   .reveal-labels .eyebrow-row{ opacity:1; transform:translateY(0); }
-  .side-panel{ width:min(29vw, 260px); transition: opacity 0.5s ease; }
-  .side-panel.right{ text-align:right; }
-  .side-panel .num{ font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:0.2em; margin-bottom:8px; }
+  .side-panel{
+    position:relative;
+    width:min(24vw, 330px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.19,1,.22,1);
+    transform-origin:left center;
+  }
+  .side-panel.right{ text-align:right; transform-origin:right center; }
+  /* the whole panel grows very slightly into the empty margin when its side is active —
+     a transform, not a width change, so nothing else has to reflow */
+  body[data-hover="red"] .side-panel.left{ transform:scale(1.05); }
+  body[data-hover="blue"] .side-panel.right{ transform:scale(1.05); }
+
+  /* one big word that lands in the empty space below the panel once its side wakes up —
+     the last beat of the power-on sequence, so it arrives after everything else */
+  .side-word{
+    position:absolute; left:0; top:100%; margin-top:26px;
+    font-family:var(--disp); font-weight:700; letter-spacing:-0.02em; line-height:1;
+    font-size:clamp(56px,7.2vw,130px); color:var(--red); opacity:0;
+    transform:translateY(22px) scale(0.92); filter:blur(10px);
+    transition: opacity 0.75s cubic-bezier(.19,1,.22,1), transform 0.85s cubic-bezier(.19,1,.22,1), filter 0.75s ease;
+    pointer-events:none; white-space:nowrap; mix-blend-mode:screen;
+  }
+  .side-panel.right .side-word{ left:auto; right:0; color:var(--blue-soft); }
+  body[data-hover="red"] .side-panel.left .side-word{
+    opacity:0.9; transform:translateY(0) scale(1); filter:blur(0); transition-delay:0.5s;
+  }
+  body[data-hover="blue"] .side-panel.right .side-word{
+    opacity:0.9; transform:translateY(0) scale(1); filter:blur(0); transition-delay:0.5s;
+  }
+  @media (max-width:980px){ .side-word{ display:none; } }
+  @media (prefers-reduced-motion: reduce){ .side-word{ transition-duration:0.3s !important; transition-delay:0s !important; } }
+
+  .side-panel .num{
+    font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:0.2em; margin-bottom:8px;
+    opacity:0.32; transition: opacity 0.6s ease;
+  }
   .side-panel .title{
     font-size:clamp(15px,2.6vw,22px); letter-spacing:0.3em; font-weight:600;
-    color:var(--red);
+    color:var(--red); opacity:0.34; filter:blur(0.5px); transform:scale(1);
+    transition: opacity 0.6s cubic-bezier(.19,1,.22,1), filter 0.6s ease, transform 0.6s cubic-bezier(.19,1,.22,1);
   }
   .side-panel.right .title{ color:var(--blue); }
   .side-panel .sub{
     margin-top:6px; font-size:9.5px; letter-spacing:0.18em; color:var(--muted);
-    text-transform:uppercase;
+    text-transform:uppercase; opacity:0.28; filter:blur(0.5px);
+    transition: opacity 0.6s ease, filter 0.6s ease;
   }
-  body[data-hover="blue"] .side-panel.left{ opacity:0.3; }
-  body[data-hover="red"] .side-panel.right{ opacity:0.3; }
+  /* idle → active: a small staggered power-on sequence — num, then heading, then subtitle */
+  body[data-hover="red"] .side-panel.left .num, body[data-hover="blue"] .side-panel.right .num{
+    opacity:0.8; transition-delay:0.03s;
+  }
+  body[data-hover="red"] .side-panel.left .title, body[data-hover="blue"] .side-panel.right .title{
+    opacity:1; filter:blur(0); transform:scale(1.04); transition-delay:0.08s;
+  }
+  body[data-hover="red"] .side-panel.left .sub, body[data-hover="blue"] .side-panel.right .sub{
+    opacity:1; filter:blur(0); transition-delay:0.15s;
+  }
+  body[data-hover="blue"] .side-panel.left{ opacity:0.4; }
+  body[data-hover="red"] .side-panel.right{ opacity:0.4; }
 
-  /* bracket-cornered readout box, echoing the SYSTEM_01 / SYSTEM_02 HUD panels */
+  /* bracket-cornered readout box, echoing the SYSTEM_01 / SYSTEM_02 HUD panels — barely
+     there at idle (faint outline + blur), powers on once its side is active */
   .bracket-box{
     position:relative; margin-top:22px; padding:14px 16px 16px;
     border-top:1px solid var(--line); border-bottom:1px solid var(--line);
-    opacity:0.6; transform:scale(0.97); transition: opacity 0.5s cubic-bezier(.19,1,.22,1), transform 0.5s cubic-bezier(.19,1,.22,1);
+    opacity:0.14; filter:blur(2.5px); transform:scale(0.96);
+    transition: opacity 0.65s cubic-bezier(.19,1,.22,1), filter 0.65s ease, transform 0.65s cubic-bezier(.19,1,.22,1);
   }
   .side-panel.left .bracket-box{ border-left:1px solid var(--line); transform-origin:left center; }
   .side-panel.right .bracket-box{ border-right:1px solid var(--line); transform-origin:right center; }
-  .side-panel:hover .bracket-box,
   body[data-hover="red"] .side-panel.left .bracket-box,
   body[data-hover="blue"] .side-panel.right .bracket-box{
-    opacity:1; transform:scale(1.035);
+    opacity:1; filter:blur(0); transform:scale(1.035); transition-delay:0.05s;
   }
   .bracket-box::before, .bracket-box::after{
     content:''; position:absolute; width:9px; height:9px; border-color:var(--red);
@@ -150,7 +204,6 @@
   .side-panel.left .bracket-box::after{ left:-1px; border-left:1.5px solid; }
   .side-panel.right .bracket-box::before{ right:-1px; border-right:1.5px solid; }
   .side-panel.right .bracket-box::after{ right:-1px; border-right:1.5px solid; }
-  .side-panel:hover .bracket-box::before, .side-panel:hover .bracket-box::after,
   body[data-hover="red"] .side-panel.left .bracket-box::before, body[data-hover="red"] .side-panel.left .bracket-box::after,
   body[data-hover="blue"] .side-panel.right .bracket-box::before, body[data-hover="blue"] .side-panel.right .bracket-box::after{
     width:14px; height:14px;
@@ -165,7 +218,7 @@
   .sys-list li{
     display:flex; align-items:baseline; gap:10px; font-size:11.5px; letter-spacing:0.04em; color:var(--muted);
     transition: color 0.4s ease, transform 0.4s cubic-bezier(.19,1,.22,1);
-    transition-delay: calc(var(--i, 0) * 0.03s);
+    transition-delay: calc(0.18s + var(--i, 0) * 0.06s);
   }
   .side-panel.right .sys-list li{ flex-direction:row-reverse; }
   .sys-list li .li-num{ font-family:var(--mono); font-size:9.5px; color:var(--muted-dim); transition:color 0.4s ease; }
@@ -183,10 +236,13 @@
   .side-panel:hover .sys-list li .li-dot, body[data-hover="red"] .side-panel.left .sys-list li .li-dot{ box-shadow:0 0 6px 2px rgba(255,60,60,0.7); transform:scale(1.4); }
   body[data-hover="blue"] .side-panel.right .sys-list li .li-dot{ box-shadow:0 0 6px 2px rgba(60,120,255,0.7); transform:scale(1.4); }
 
-  .status-box{ margin-top:18px; opacity:0.6; transition: opacity 0.5s ease; }
+  .status-box{
+    margin-top:18px; opacity:0.14; filter:blur(2px);
+    transition: opacity 0.6s ease, filter 0.6s ease;
+  }
   .side-panel:hover .status-box,
   body[data-hover="red"] .side-panel.left .status-box,
-  body[data-hover="blue"] .side-panel.right .status-box{ opacity:1; }
+  body[data-hover="blue"] .side-panel.right .status-box{ opacity:1; filter:blur(0); transition-delay:0.4s; }
   .status-box .stat-label{
     font-family:var(--mono); font-size:9.5px; letter-spacing:0.2em; color:var(--red); margin-bottom:6px;
   }
@@ -195,6 +251,12 @@
 
   @media (max-width:980px){
     .bracket-box, .status-box{ display:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .side-panel, .side-panel .title, .side-panel .sub, .side-panel .num, .bracket-box, .status-box{
+      transition-duration:0.3s !important; transition-delay:0s !important;
+    }
+    body[data-hover] .side-panel.left, body[data-hover] .side-panel.right{ transform:none; }
   }
 
   .character-parallax{
@@ -245,6 +307,12 @@
   }
   .pill-left{ left:19.8%; top:36.4%; }
   .pill-right{ left:79.9%; top:35.6%; }
+
+  /* forgiving invisible hover/tap target — larger than the visible capsule, centered on it */
+  .pill-hit{
+    position:absolute; left:50%; top:50%; width:96px; height:130px;
+    transform:translate(-50%,-50%); background:transparent; pointer-events:auto; z-index:1;
+  }
 
   .pill-glow{
     position:absolute; left:50%; top:50%; width:76px; height:76px;
@@ -630,34 +698,31 @@
   }
 
   /* right-gutter line pattern — Technical world only, sits in the empty space between the
-     content column and the edge rail. Fixed to viewport so it runs top-to-bottom regardless
-     of scroll, minimal (thin static traces) with one small moving pulse each for motion. */
+     content column and the edge rail. Fixed to viewport, curved traces run the FULL height
+     top-to-bottom and stay fully visible at all times; a slow flowing dash-overlay is the
+     only thing that moves, keeping the effect minimal rather than busy. */
   .tech-side-pattern{
-    position:fixed; top:0; right:4vw; width:min(160px,13vw); height:100vh; z-index:0;
-    pointer-events:none; opacity:0; transition:opacity 1s ease;
+    position:fixed; top:0; right:4vw; width:min(170px,13vw); height:100vh; z-index:0;
+    pointer-events:none; opacity:0; transition:opacity 0.8s ease;
   }
   #technical.active .tech-side-pattern{ opacity:1; }
-  .tech-side-pattern .tsp-line{ position:absolute; top:0; bottom:0; width:1px; overflow:hidden; }
-  .tech-side-pattern .tsp-line::before{
-    content:''; position:absolute; inset:0;
-    background:linear-gradient(rgba(255,59,63,0.16), rgba(255,59,63,0.03) 55%, transparent);
+  .tech-side-pattern svg{ width:100%; height:100%; display:block; animation: tspSway 11s ease-in-out infinite; }
+  .tsp-base{ fill:none; stroke:rgba(255,59,63,0.16); stroke-width:1; }
+  .tsp-flow{
+    fill:none; stroke:var(--red-soft); stroke-width:1.3; opacity:0.8;
+    stroke-dasharray:4 26; stroke-linecap:round;
+    animation: tspFlow linear infinite;
   }
-  .tech-side-pattern .tsp-line::after{
-    content:''; position:absolute; left:-1px; width:3px; height:90px; top:-90px;
-    background:linear-gradient(var(--red-soft), transparent); border-radius:2px;
-    animation: tspPulse 7s linear infinite;
-  }
-  .tech-side-pattern .tsp-line:nth-child(1){ left:8%; }
-  .tech-side-pattern .tsp-line:nth-child(2){ left:38%; }
-  .tech-side-pattern .tsp-line:nth-child(3){ left:68%; }
-  .tech-side-pattern .tsp-line:nth-child(4){ left:96%; }
-  .tech-side-pattern .tsp-line:nth-child(1)::after{ animation-delay:0s; animation-duration:7.5s; }
-  .tech-side-pattern .tsp-line:nth-child(2)::after{ animation-delay:-2.6s; animation-duration:9s; }
-  .tech-side-pattern .tsp-line:nth-child(3)::after{ animation-delay:-5.1s; animation-duration:6.5s; }
-  .tech-side-pattern .tsp-line:nth-child(4)::after{ animation-delay:-1.3s; animation-duration:8.2s; }
-  @keyframes tspPulse{ 0%{ top:-90px; opacity:0; } 8%{ opacity:1; } 92%{ opacity:1; } 100%{ top:100%; opacity:0; } }
+  .tsp-group:nth-child(1) .tsp-flow{ animation-duration:6.5s; }
+  .tsp-group:nth-child(2) .tsp-flow{ animation-duration:8s; animation-delay:-2.2s; }
+  .tsp-group:nth-child(3) .tsp-flow{ animation-duration:7.2s; animation-delay:-4.5s; }
+  @keyframes tspFlow{ to{ stroke-dashoffset:-600; } }
+  @keyframes tspSway{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(-5px); } }
   @media (max-width:1320px){ .tech-side-pattern{ display:none; } }
-  @media (prefers-reduced-motion: reduce){ .tech-side-pattern .tsp-line::after{ animation:none; opacity:0; } }
+  @media (prefers-reduced-motion: reduce){
+    .tech-side-pattern svg{ animation:none; }
+    .tsp-flow{ animation:none; opacity:0.45; }
+  }
 
   /* node affordance — a small ring pulses on hover so it's clear the node is interactive */
   .net-node{ cursor:pointer !important; }
@@ -905,17 +970,18 @@
         <div class="bracket-box">
           <div class="sys-tag">SYSTEM_01</div>
           <ul class="sys-list">
-            <li><span class="li-num">01</span><span>Data Structures</span><span class="li-dot"></span></li>
-            <li><span class="li-num">02</span><span>Algorithms</span><span class="li-dot"></span></li>
-            <li><span class="li-num">03</span><span>Data Science</span><span class="li-dot"></span></li>
-            <li><span class="li-num">04</span><span>Machine Learning</span><span class="li-dot"></span></li>
-            <li><span class="li-num">05</span><span>Web Development</span><span class="li-dot"></span></li>
+            <li style="--i:0"><span class="li-num">01</span><span>Data Structures</span><span class="li-dot"></span></li>
+            <li style="--i:1"><span class="li-num">02</span><span>Algorithms</span><span class="li-dot"></span></li>
+            <li style="--i:2"><span class="li-num">03</span><span>Data Science</span><span class="li-dot"></span></li>
+            <li style="--i:3"><span class="li-num">04</span><span>Machine Learning</span><span class="li-dot"></span></li>
+            <li style="--i:4"><span class="li-num">05</span><span>Web Development</span><span class="li-dot"></span></li>
           </ul>
         </div>
         <div class="status-box">
           <div class="stat-label">STATUS</div>
           <div class="stat-value">Always Building</div>
         </div>
+        <div class="side-word" aria-hidden="true">BUILD</div>
       </div>
       <div class="side-panel right">
         <div class="num">02</div>
@@ -924,17 +990,18 @@
         <div class="bracket-box">
           <div class="sys-tag">SYSTEM_02</div>
           <ul class="sys-list">
-            <li><span class="li-num">01</span><span>UI / UX Design</span><span class="li-dot"></span></li>
-            <li><span class="li-num">02</span><span>Visual Design</span><span class="li-dot"></span></li>
-            <li><span class="li-num">03</span><span>Branding</span><span class="li-dot"></span></li>
-            <li><span class="li-num">04</span><span>Motion Design</span><span class="li-dot"></span></li>
-            <li><span class="li-num">05</span><span>Interaction Design</span><span class="li-dot"></span></li>
+            <li style="--i:0"><span class="li-num">01</span><span>UI / UX Design</span><span class="li-dot"></span></li>
+            <li style="--i:1"><span class="li-num">02</span><span>Visual Design</span><span class="li-dot"></span></li>
+            <li style="--i:2"><span class="li-num">03</span><span>Branding</span><span class="li-dot"></span></li>
+            <li style="--i:3"><span class="li-num">04</span><span>Motion Design</span><span class="li-dot"></span></li>
+            <li style="--i:4"><span class="li-num">05</span><span>Interaction Design</span><span class="li-dot"></span></li>
           </ul>
         </div>
         <div class="status-box">
           <div class="stat-label">MODE</div>
           <div class="stat-value">Creative Flow</div>
         </div>
+        <div class="side-word" aria-hidden="true">CREATE</div>
       </div>
     </div>
 
@@ -944,11 +1011,13 @@
       <img class="char-img" src="images/no bg.png" alt="Illustrated portrait of Gowrish Chandran, arms open with palms facing up" draggable="false">
 
       <div class="pill-anchor pill-left pill-wrap" tabindex="0" role="button" aria-label="Explore the Technical side" id="pillRed">
+        <div class="pill-hit"></div>
         <div class="pill-glow"></div>
         <div class="pill-body"></div>
         <span class="pill-label">Technical</span>
       </div>
       <div class="pill-anchor pill-right pill-wrap" tabindex="0" role="button" aria-label="Explore the Design side" id="pillBlue">
+        <div class="pill-hit"></div>
         <div class="pill-glow"></div>
         <div class="pill-body"></div>
         <span class="pill-label">Design</span>
@@ -1000,10 +1069,20 @@
 <!-- ================= TECHNICAL WORLD ================= -->
 <section class="world" id="technical" aria-label="Technical portfolio">
   <div class="tech-side-pattern" aria-hidden="true">
-    <div class="tsp-line"></div>
-    <div class="tsp-line"></div>
-    <div class="tsp-line"></div>
-    <div class="tsp-line"></div>
+    <svg viewBox="0 0 170 1000" preserveAspectRatio="none">
+      <g class="tsp-group">
+        <path class="tsp-base" d="M30,0 C70,90 -10,180 40,270 C90,360 -10,450 30,540 C70,630 -10,720 40,810 C75,880 20,940 30,1000" />
+        <path class="tsp-flow" d="M30,0 C70,90 -10,180 40,270 C90,360 -10,450 30,540 C70,630 -10,720 40,810 C75,880 20,940 30,1000" />
+      </g>
+      <g class="tsp-group">
+        <path class="tsp-base" d="M90,0 C50,120 130,220 85,340 C40,460 130,560 90,680 C60,770 120,860 90,1000" />
+        <path class="tsp-flow" d="M90,0 C50,120 130,220 85,340 C40,460 130,560 90,680 C60,770 120,860 90,1000" />
+      </g>
+      <g class="tsp-group">
+        <path class="tsp-base" d="M145,0 C110,100 165,210 130,320 C95,430 165,540 135,650 C110,740 160,860 140,1000" />
+        <path class="tsp-flow" d="M145,0 C110,100 165,210 130,320 C95,430 165,540 135,650 C110,740 160,860 140,1000" />
+      </g>
+    </svg>
   </div>
   <nav class="world-nav">
     <div class="brand">GOWRISH.</div>
@@ -1315,6 +1394,7 @@
   const scene = document.getElementById('scene');
   const burst = document.getElementById('burst');
   const worlds = { technical: document.getElementById('technical'), design: document.getElementById('design') };
+  let activeSide = null;
 
   function setHover(side){
     hoverSide = side;
@@ -1331,8 +1411,28 @@
     pill.addEventListener('blur', ()=> setHover(null));
     pill.addEventListener('click', ()=> enterWorld(side));
     pill.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); enterWorld(side); }});
-    pill.addEventListener('touchstart', ()=>{ pill.classList.toggle('touched'); }, {passive:true});
+    // touch: first tap wakes the side up (preview only); a second tap on the same,
+    // now-active pill proceeds to enter — mirrors hover-then-click on desktop
+    pill.addEventListener('touchstart', (e)=>{
+      if(activeSide !== side){
+        e.preventDefault();
+        activeSide = side;
+        setHover(side);
+        pillRed.classList.toggle('touched', side==='red');
+        pillBlue.classList.toggle('touched', side==='blue');
+      }
+    }, {passive:false});
   });
+
+  // tapping outside both pills returns to the idle state
+  document.addEventListener('touchstart', (e)=>{
+    if(activeSide && !pillRed.contains(e.target) && !pillBlue.contains(e.target)){
+      activeSide = null;
+      setHover(null);
+      pillRed.classList.remove('touched');
+      pillBlue.classList.remove('touched');
+    }
+  }, {passive:true});
 
   function fireBurst(color){
     burst.style.background = `radial-gradient(circle at ${hoverSide==='red' ? '18%' : '82%'} 60%, ${color} 0%, transparent 55%)`;
@@ -1363,6 +1463,9 @@
     Object.values(worlds).forEach(w => w.classList.remove('active'));
     scene.classList.remove('leaving-red','leaving-blue');
     setHover(null);
+    activeSide = null;
+    pillRed.classList.remove('touched');
+    pillBlue.classList.remove('touched');
     scrollProgress.classList.remove('visible');
   }
 

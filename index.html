@@ -101,21 +101,25 @@
   }
 
   /* top editorial bar */
+  /* positioned to match .stage's own centering exactly, but NOT inside .stage — so the
+     camera zoom/pan on pill hover never moves it; it stays put while everything else reacts */
   .top-bar{
-    position:absolute; top:5%; width:100%; display:flex; justify-content:space-between; padding:0 clamp(24px,6vw,100px);
+    position:absolute; top:5%; left:0; right:0; width:min(94vw,1600px); margin:0 auto;
+    display:flex; justify-content:space-between; padding:0 clamp(24px,6vw,100px);
     opacity:0; transform:translateY(-8px); transition:opacity 1s ease, transform 1s ease;
+    z-index:6;
   }
-  .reveal-brand .top-bar{ opacity:1; transform:translateY(0); }
-  .top-bar .mark{ font-size:13px; letter-spacing:0.28em; font-weight:600; }
-  .top-bar .mark small{ display:block; margin-top:5px; font-size:9px; letter-spacing:0.22em; color:var(--muted); font-weight:400; }
-  .top-bar .meta{ text-align:right; font-size:9px; letter-spacing:0.22em; color:var(--muted); }
+  #scene.reveal-brand .top-bar{ opacity:1; transform:translateY(0); }
+  .top-bar .mark{ font-size:19px; letter-spacing:0.26em; font-weight:600; }
+  .top-bar .mark small{ display:block; margin-top:6px; font-size:11px; letter-spacing:0.2em; color:var(--muted); font-weight:400; }
+  .top-bar .meta{ text-align:right; font-size:11px; letter-spacing:0.2em; color:var(--muted); }
   .top-bar .meta span{ display:block; }
   .top-bar .meta .blink{ display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--paper); margin-right:6px; opacity:0.6; animation:blinkDot 2.4s ease infinite; }
   @keyframes blinkDot{ 0%,100%{opacity:0.15;} 50%{opacity:0.9;} }
 
   .eyebrow-row{
     position:absolute; top:13%; width:100%;
-    display:flex; justify-content:space-between; align-items:flex-start; padding:0 clamp(24px,6vw,100px);
+    display:flex; justify-content:space-between; align-items:flex-start; padding:0 clamp(74px,6vw,150px);
     opacity:0; transform:translateY(-8px);
     transition: opacity 1s ease, transform 1s ease;
   }
@@ -955,12 +959,11 @@
 
 <!-- ================= INTRO SCENE ================= -->
 <main id="scene">
+  <div class="top-bar">
+    <div class="mark">GOWRISH.<small>Creative Technologist</small></div>
+    <div class="meta"><span><span class="blink"></span>Portfolio / 2026</span><span style="margin-top:4px;">Choose a side to begin</span></div>
+  </div>
   <div class="stage" id="stage">
-
-    <div class="top-bar">
-      <div class="mark">GOWRISH.<small>Creative Technologist</small></div>
-      <div class="meta"><span><span class="blink"></span>Portfolio / 2026</span><span style="margin-top:4px;">Choose a side to begin</span></div>
-    </div>
 
     <div class="eyebrow-row">
       <div class="side-panel left">
@@ -1386,7 +1389,7 @@
   setTimeout(()=> stage.classList.add('reveal-character'), timings[2]);
   setTimeout(()=> stage.classList.add('reveal-pills'), timings[3]);
   setTimeout(()=> stage.classList.add('reveal-labels'), timings[4]);
-  setTimeout(()=> stage.classList.add('reveal-brand'), timings[5]);
+  setTimeout(()=> { stage.classList.add('reveal-brand'); scene.classList.add('reveal-brand'); }, timings[5]);
 
   /* ---------- pill interactions ---------- */
   const pillRed = document.getElementById('pillRed');
